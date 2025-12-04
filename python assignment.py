@@ -1,70 +1,125 @@
-"""
-Author: Preet
-Date: 19th Sep, 2024
-Project: Daily Calorie Tracker CLI
-"""
+import csv
+import statistics 
 
-import datetime
+print("============================================")
+print("            GRADEBOOK ANALYZER")
+print("============================================")
+print("1. Manual Input of Student Marks")
+print("2. Load from CSV File")
+print("============================================")
 
-def main():
-    print("======================================")
-    print(" Welcome to the Daily Calorie Tracker ")
-    print("======================================")
-    print("This tool helps you log meals, track calories, compare with your daily limit,")
-    print("and optionally save your session report.\n")
+while True:
 
-    # Task 2: Input & Data Collection
-    meals = []
-    calories = []
+    choice = input("\nChoose an option (1 or 2): ")
 
-    num_meals = int(input("How many meals do you want to enter today? "))
+    marks = {}     # store {name: marks}
 
-    for i in range(num_meals):
-        meal_name = input(f"Enter meal {i+1} name: ")
-        calorie_amount = float(input(f"Enter calories for {meal_name}: "))
-        meals.append(meal_name)
-        calories.append(calorie_amount)
+    # ------------------------------------------------
+    # Option 1 → Manual entry
+    # ------------------------------------------------
+    if choice == "1":
+        n = int(input("How many students? "))
 
-    # Task 3: Calorie Calculations
-    total_calories = sum(calories)
-    avg_calories = total_calories / len(calories)
+        for i in range(n):
+            name = input(f"Enter name of student {i+1}: ")
+            score = int(input("Enter marks: "))
+            marks[name] = score
 
-    daily_limit = float(input("\nEnter your daily calorie limit: "))
+    # ------------------------------------------------
+    # Option 2 → CSV input
+    # ------------------------------------------------
+    elif choice == "2":
+        filename = input("Enter CSV filename: ")
 
-    # Task 4: Exceed Limit Warning System
-    if total_calories > daily_limit:
-        status_message = f"⚠️ Warning: You exceeded your daily limit of {daily_limit} calories!"
+        try:
+            with open(filename, "r") as file:
+                reader = csv.reader(file)
+                next(reader)  # skip header
+
+                for row in reader:
+                    marks[row[0]] = int(row[1])
+
+        except FileNotFoundError:
+            print("File not found! Try again.")
+            continue
     else:
-        status_message = f"✅ Good job! You are within your daily limit of {daily_limit} calories."
+        print("Invalid choice. Enter 1 or 2.")
+        continue
 
-    # Task 5: Neatly Formatted Output
-    print("\n===== Daily Calorie Report =====")
-    print("Meal Name\tCalories")
-    print("--------------------------------")
-    for meal, cal in zip(meals, calories):
-        print(f"{meal}\t\t{cal}")
-    print("--------------------------------")
-    print(f"Total:\t\t{total_calories}")
-    print(f"Average:\t{avg_calories:.2f}")
-    print(status_message)
+    # ------------------------------------------------
+    # Task 3: Statistical Analysis (NO FUNCTIONS)
+    # ------------------------------------------------
+    values = list(marks.values())
 
-    # Task 6 (Bonus): Save Session Log to File
-    save_choice = input("\nDo you want to save this report to a file? (yes/no): ").strip().lower()
-    if save_choice == "yes":
-        filename = "calorie_log.txt"
-        with open(filename, "w") as f:
-            f.write("===== Daily Calorie Report =====\n")
-            f.write(f"Timestamp: {datetime.datetime.now()}\n\n")
-            f.write("Meal Name\tCalories\n")
-            f.write("--------------------------------\n")
-            for meal, cal in zip(meals, calories):
-                f.write(f"{meal}\t\t{cal}\n")
-            f.write("--------------------------------\n")
-            f.write(f"Total:\t\t{total_calories}\n")
-            f.write(f"Average:\t{avg_calories:.2f}\n")
-            f.write(status_message + "\n")
-        print(f"\nReport saved successfully to {filename} ✅")
+    average = sum(values) / len(values)
+    median = statistics.median(values)
 
-if __name__ == "__main__":
-    main()
+    max_student = max(marks, key=marks.get)
+    min_student = min(marks, key=marks.get)
+
+    print("\n=========== STATISTICS ===========")
+    print(f"Average Marks: {average:.2f}")
+    print(f"Median Marks: {median}")
+    print(f"Highest Score: {max_student} → {marks[max_student]}")
+    print(f"Lowest Score: {min_student} → {marks[min_student]}")
+
+    # ------------------------------------------------
+    # Task 4: Grade assignment (NO FUNCTIONS)
+    # ------------------------------------------------
+    grades = {}
+
+    for name, score in marks.items():
+        if score >= 90:
+            grades[name] = "A"
+        elif score >= 80:
+            grades[name] = "B"
+        elif score >= 70:
+            grades[name] = "C"
+        elif score >= 60:
+            grades[name] = "D"
+        else:
+            grades[name] = "F"
+
+    # Count grade distribution
+    grade_count = {
+        "A": list(grades.values()).count("A"),
+        "B": list(grades.values()).count("B"),
+        "C": list(grades.values()).count("C"),
+        "D": list(grades.values()).count("D"),
+        "F": list(grades.values()).count("F"),
+    }
+
+    print("\n=========== GRADE DISTRIBUTION ===========")
+    for grade, count in grade_count.items():
+        print(f"{grade}: {count}")
+
+    # ------------------------------------------------
+    # Task 5: Pass/Fail using list comprehension
+    # ------------------------------------------------
+    passed = [name for name, score in marks.items() if score >= 40]
+    failed = [name for name, score in marks.items() if score < 40]
+
+    print("\n=========== PASS / FAIL REPORT ===========")
+    print(f"Passed ({len(passed)}): {passed}")
+    print(f"Failed ({len(failed)}): {failed}")
+
+    # ------------------------------------------------
+    # Task 6: Final result table
+    # ------------------------------------------------
+    print("\n=========== FINAL GRADEBOOK TABLE ===========")
+    print("Name\t\tMarks\tGrade")
+    print("-------------------------------------------")
+
+    for name, score in marks.items():
+        print(f"{name}\t\t{score}\t{grades[name]}")
+
+    print("-------------------------------------------")
+
+    # ------------------------------------------------
+    # Repeat loop
+    # ------------------------------------------------
+    again = input("\nDo you want to analyze again? (yes/no): ").lower()
+    if again != "yes":
+        print("\nThank you for using GradeBook Analyzer! 😊")
+        break
 
